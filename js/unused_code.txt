@@ -1,0 +1,246 @@
+/* PARTICLES *
+spawnFunction(particleArray, numParticles x, y)
+updateFunction(particleArray, numParticles, spawnTime, duration)
+drawFunction(particleArray, numParticles, ctx, xofs, yofs, spawnTime, duration)
+*/
+function pUpdateFunc_gravity(particles, numParticles, spawnTime, duration) {
+	var t = 1 - (g_GAMETIME - spawnTime) / duration;
+	if (t < 0) t = 0;
+	for (var i = 0; i < numParticles; i++) {
+		particles[i].vel.y += g_GAME_STATE.gravity.y * 0.25;
+		particles[i].pos.x += particles[i].vel.x * g_FRAMETIME_S * t;
+		particles[i].pos.y += particles[i].vel.y * g_FRAMETIME_S * t;
+	}
+}
+
+function pSpawnFunc_explosion(particles, numParticles, x, y) {
+	var angle = 2 * Math.PI / numParticles;
+	var force = 150;
+	for (var i = 0; i < numParticles; i++) {
+		particles[i].pos.set(x, y);
+		particles[i].vel.setAngle(angle * i);
+		particles[i].vel.mul(force);
+	}
+}
+
+function pSpawnFunc_trail(particles, numParticles, x, y) {
+
+}
+
+function Particle() {
+	this.pos = new Vector2(0, 0);
+	this.vel = new Vector2(0, 0);
+}
+
+Particle.prototype.set = function(px, py, dx, dy) {
+	this.pos.set(px, py);
+	this.vel.set(dx, dy);
+}
+
+function ParticleSystem(MAX_PARTICLES) {
+	this.particles = [];
+	this.numParticles = MAX_PARTICLES; //this can be set lower after creation
+	this.spawnTime = 0; //if 0, don't update, else use gametime - spawntime to calculate t
+	this.duration = 0; //how many ms particles last before being killed
+	this.spawnFunction = null; //function to initialise all particles
+	this.updateFunction = null; //function to update all particles each frame
+	this.drawFunction = null; //draw the particles however you like
+
+	for (var i = 0; i < MAX_PARTICLES; i++) {
+		this.particles[i] = new Particle();
+	}
+}
+
+//constant per system
+ParticleSystem.prototype.getMaxParticles = function() {
+	return this.particles.length;
+}
+
+//spawn particles at x, y
+ParticleSystem.prototype.spawn = function(numParticles, x, y, duration) {
+	if (numParticles > 0) {
+		this.numParticles = (numParticles > this.particles.length) ? this.particles.length : numParticles;
+		this.spawnTime = g_GAMETIME;
+		this.duration = duration;
+		if (this.spawnFunction) {
+			this.spawnFunction.call(this, this.particles, this.numParticles, x, y);
+		}
+	}
+}
+
+ParticleSystem.prototype.update = function() {
+	if (g_GAMETIME - this.spawnTime < this.duration) {
+		if (this.updateFunction) {
+			this.updateFunction.call(this, this.particles, this.numParticles, this.spawnTime, this.duration);
+		}
+	} else {
+		this.spawnTime = 0;
+	}
+}
+
+ParticleSystem.prototype.draw = function(ctx, xofs, yofs) {
+	if (this.spawnTime) {
+		if (this.drawFunction) {
+			this.drawFunction.call(this, this.particles, this.numParticles, ctx, xofs, yofs, this.spawnTime, this.duration);
+		} else {
+			this.drawDebug(ctx, xofs, yofs);
+		}
+	}
+}
+
+//draw square particles size 2
+ParticleSystem.prototype.drawDebug = function(ctx, xofs, yofs) {
+	var x, y;
+	for (var i = 0; i < this.numParticles; i++) {
+		x = Math.floor(this.particles[i].pos.x) - 0.5; //+0.5 to disable anti-aliasing, -1 to draw from center
+		y = Math.floor(this.particles[i].pos.y) - 0.5;
+		ctx.fillRect(x, y, 2, 2);
+	}
+}
+
+
+
+/* BACKGROUND *
+furthest back layer uses one long tiling image and scrolls very slowly
+in between layers use multiple images that should be scrolled together but not overlapping (per layer)
+nearest layer has collision but uses same principle as in between layers
+parallax should be handled in this code so that culling can be effectively performed
+
+spacing - 0 : next object's left edge should touch this objects right edge
+*/
+function BackgroundObject() {
+	this.sprite = null;
+	this.anim = null;
+	this.pos = new Vector2(0, 0);
+	this.spacing = 0;
+	this.active = false;
+}
+
+BackgroundObject.prototype.update = function() {
+	if (this.anim) this.anim.update();
+}
+
+BackgroundObject.prototype.draw = function(ctx, xofs, yofs) {
+	if (this.anim) {
+		this.sprite.draw(ctx, this.pos.x + xofs, this.pos.y + yofs, this.anim.currentFrame);
+	} else {
+		this.sprite.draw(ctx, this.pos.x + xofs, this.pos.y + yofs, 0);
+	}
+}
+
+BackgroundObject.prototype.toString = function() {
+	var rv = new String();
+	if (this.sprite) rv += this.sprite.img.src;
+	else rv += "null";
+	rv += " | " + this.anim;
+	rv += " | " + this.pos;
+	rv += " | " + this.spacing;
+	
+}
+
+function BackgroundLayer(MAX_OBJECTS, layer, parallaxScale) {
+	this.objects = [];
+	this.layer = layer || 0;
+	this.parallaxScale = parallaxScale || 1; //1 = default, 0 = don't move, other values move more or less
+	this.loop = false; //true: repeat objects without removing from array, false: cull objects that go off screen
+	
+	this.firstIndex = 0;
+	this.lastIndex = 0;
+	
+	for (var i = 0; i < MAX_OBJECTS; i++) {
+		this.objects[i] = new BackgroundObject();
+	}
+}
+
+//add an object after this.lastIndex
+BackgroundLayer.prototype.addObject = function(sprite, anim, py, spacing) {
+	var insertIndex = (this.objects[this.lastIndex].active) ? this.lastIndex + 1 : this.lastIndex;
+	if (insertIndex >= this.objects.length) {
+		insertIndex = 0;
+	}
+	if (!this.objects[insertIndex].active) {
+		var px;
+		if (this.objects[this.lastIndex].active) {
+			px = this.objects[this.lastIndex].pos.x + this.objects[this.lastIndex].spacing;
+		} else {
+			if (this.loop) {
+				px = 0;
+			} else {
+				px = g_SCREEN.width;
+			}
+		}
+		this.objects[insertIndex].sprite = sprite;
+		this.objects[insertIndex].anim = anim;
+		this.objects[insertIndex].spacing = spacing;
+		this.objects[insertIndex].pos.set(px, py);
+		this.objects[insertIndex].active = true;
+	}
+	this.lastIndex = insertIndex;
+}
+
+//remove this.firstIndex object
+BackgroundLayer.prototype.removeObject = function() {
+	if (this.objects[this.firstIndex].active) {
+		this.objects[this.firstIndex].active = false;
+		if (this.firstIndex == this.lastIndex) { //reset indices if list is now empty
+			this.firstIndex = 0;
+			this.lastIndex = 0;
+		} else { //increment the index
+			if (++this.first >= this.objects.length) {
+				this.first = 0;
+			}
+		}
+	}
+}
+
+BackgroundLayer.prototype.update = function() {
+	//only do anything if there is at least one object in the Layer
+	if (this.objects[this.firstIndex].active) {
+		var i = this.firstIndex;
+		while (1) { //loop until we break on lastIndex condition
+			this.objects[i].pos.x -= g_GAME_STATE.scrollSpeed * this.parallaxScale;
+			if (this.loop == false && (this.objects[i].pos.x + this.objects[i].spacing) < 0) {
+				this.removeObject(); //SHOULD be this object!
+			} else {
+				this.objects[i].update();
+			}
+			if (i == this.lastIndex) break;
+			if (++i >= this.objects.length) i = 0;
+		}
+	}
+}
+
+//pain in the ass
+BackgroundLayer.prototype.draw_loop = function(ctx, xofs, yofs) {
+}
+
+BackgroundLayer.prototype.draw_simple = function(ctx, xofs, yofs) {
+	var i = this.lastIndex;
+	while(1) {
+		this.objects[i].draw(ctx, xofs, yofs);
+		if (i == this.firstIndex) break;
+		if (--i < 0) i = this.objects.length - 1;
+	}
+}
+
+//need to draw from right to left so objects closer to the left are on top
+BackgroundLayer.prototype.draw = function(ctx, xofs, yofs) {
+	if (this.objects[this.firstIndex].active) {
+		if (this.loop) {
+			this.draw_loop(ctx, xofs, yofs);
+		} else {
+			this.draw_simple(ctx, xofs, yofs);
+		}
+	}
+}
+
+BackgroundLayer.prototype.addDrawCall = function() {
+	if (this.objects[this.firstIndex].active) {
+		g_RENDERLIST.addObject(this, this.layer, 0, false);
+	}
+}
+
+BackgroundLayer.prototype.toString = function() {
+	var rv = new String("<b>BackgroundLayer.objects</b><br><i>sprite</i> | <i>anim</i> | <i>pos</i> | <i>spacing</i>");
+	
+}
