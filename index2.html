@@ -1,0 +1,31 @@
+<html>
+    <head>
+		<title>Santa's LATE Christmas Delivery</title>
+		<link rel="stylesheet" type="text/css" href="style2.css" />
+		<link href='http://fonts.googleapis.com/css?family=Mountains+of+Christmas' rel='stylesheet' type='text/css'>
+
+		<!--load all the javascript files-->
+		<script type="text/javascript" src="js/vector2.js"></script>
+		<script type="text/javascript" src="js/system.js"></script>
+		<script type="text/javascript" src="js/sprite.js"></script>
+		<script type="text/javascript" src="js/seedrandom.js"></script>
+		<script type="text/javascript" src="js/game.js"></script>
+	</head>
+
+	<body onload='sys_startup(init, main, 60)'>
+
+		<div class='game'>
+			<canvas id='screen'></canvas>
+			<div class='ui' id='ui_panel'>
+				<p id='ui_score' class='ui' style='left: 16px; width: 256px'>Score:</p>
+				<p id='ui_time' class='ui' style='left: 820px; width: 152px'>Time:</p>
+				<p id='ui_info' class='ui' style='left: 300px; top: 32px; width: 400px; height: 256px'></p>
+			</div>
+			<div id='debug_panel' class='debug'>
+				<p id='keystates' class='debug_left'>[key states]</p>
+				<p id='debug' class='debug_right'>[debug output]</p>
+			</div>
+		</div>
+
+	</body>
+</html>

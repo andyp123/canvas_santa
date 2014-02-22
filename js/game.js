@@ -1871,7 +1871,7 @@ GameState.prototype.update = function() {
 	
 	switch (this.state) {
 		case GameState.STATE_ATTRACT: //no obstacle spawning, player moved by ai. switch state on keypress
-			if (g_KEYSTATES.anyKeyJustPressed || g_MOUSE.left.justPressed() || g_MOUSE.right.justPressed()) {
+			if (g_KEYSTATES.justPressed(32) || g_MOUSE.left.justPressed()) {
 				this.setState(GameState.STATE_GAMESTART);
 			}
 			break;
@@ -2047,10 +2047,7 @@ GameState.prototype.missDelivery = function() {
 		this.comboMiss++;
 		this.comboLast = this.combo;
 		this.combo = 0;
-		this.multiplier -= 5;
-		if (this.multiplier < 0) {
-			this.multiplier = 0;
-		}
+		this.multiplier = Math.floor(this.multiplier * 0.5);
 	}
 }
 
@@ -2281,50 +2278,9 @@ function main() {
 	g_RAND.generateNumbers();
 }
 
-//initialise background layer
-function init_background() {
-	var temp;
-	
-	//sky
-	g_BACKGROUND.addScrollLayer(new BackgroundScrollLayer(sys_TEXTURES[2], 0, -588, -10, 0));
-	
-	//moon
-	temp = new BackgroundComponent();
-	temp.set(new Sprite(sys_TEXTURES[5],1, 1), null, 680, -64, -10, 5);
-	g_BACKGROUND.addComponent(temp);
-
-	//far background hills
-	g_BACKGROUND.addScrollLayer(new BackgroundScrollLayer(sys_TEXTURES[4], 0.1, 128, -9, 0));
-	
-	//main background hills
-	g_BACKGROUND.addScrollLayer(new BackgroundScrollLayer(sys_TEXTURES[3], 0.25, 48, -7, 0));
-	
-	//trees
-	temp = new BackgroundComponentLayer(8, 0.5, -6, 0, 1000, 2250);
-	temp.addTemplate(new Sprite(sys_TEXTURES[9], 1, 1), 200, 220, 1);
-	temp.addTemplate(new Sprite(sys_TEXTURES[10], 1, 1), 160, 180, 1);
-	temp.addTemplate(new Sprite(sys_TEXTURES[11], 1, 1), 160, 200, 1);
-	g_BACKGROUND.addComponentLayer(temp);
-	
-	//nearer trees
-	temp = new BackgroundComponentLayer(8, 0.65, -5, 0, 300, 1800);
-	temp.addTemplate(new Sprite(sys_TEXTURES[6], 1, 1), 128, 160, 1);
-	temp.addTemplate(new Sprite(sys_TEXTURES[7], 1, 1), 128, 140, 1);
-	temp.addTemplate(new Sprite(sys_TEXTURES[8], 1, 1), 128, 180, 1);
-	temp.nextSpawnTime = g_GAMETIME + 2000;
-	g_BACKGROUND.addComponentLayer(temp);
-	
-	//houses
-	temp = new BackgroundComponentLayer(4, 0.8, -3, 0, 2000, 4000);
-	temp.addTemplate(new Sprite(sys_TEXTURES[12], 1, 1), 160, 190, 1);
-	temp.addTemplate(new Sprite(sys_TEXTURES[13], 1, 1), 160, 190, 1);
-	temp.nextSpawnTime = g_GAMETIME + 6000;
-	g_BACKGROUND.addComponentLayer(temp);
-}
-
 function init() {
-	var screen_width = 928; //original width 960
-	var screen_height = 320; //original height 320
+	var screen_width = 960; //original width 960
+	var screen_height = 400; //original height 320
 
 	if(g_SCREEN.init('screen', screen_width, screen_height, true)) {		
 		//random numbers
@@ -2367,7 +2323,8 @@ function init() {
 		g_OBSTACLE_MANAGER = new ObjectManager();
 		g_OBSTACLE_MANAGER.init_ObstacleManager(16);
 	
-		g_GAMEAREA = new AABB(g_SCREEN.width * 0.5, g_SCREEN.height * 0.5 - 200, g_SCREEN.width, g_SCREEN.height + 400);
+		//g_GAMEAREA = new AABB(g_SCREEN.width * 0.5, g_SCREEN.height * 0.5 - 200, g_SCREEN.width, g_SCREEN.height + 400);
+		g_GAMEAREA = new AABB(g_SCREEN.width * 0.5, -40, g_SCREEN.width, 720);
 		g_CAMERA = new Camera();
 		g_CAMERA.min.y = -350;
 		g_CAMERA.max.y = 0;
@@ -2378,3 +2335,44 @@ function init() {
 	}
 }
 
+//initialise background layer
+function init_background() {
+	var temp;
+	var yofs = g_SCREEN.height - 320;
+
+	//sky
+	g_BACKGROUND.addScrollLayer(new BackgroundScrollLayer(sys_TEXTURES[2], 0, -820 + yofs, -10, 0));
+	
+	//moon
+	temp = new BackgroundComponent();
+	temp.set(new Sprite(sys_TEXTURES[5],1, 1), null, g_SCREEN.width - 250, -128 + yofs, -10, 5);
+	g_BACKGROUND.addComponent(temp);
+
+	//far background hills
+	g_BACKGROUND.addScrollLayer(new BackgroundScrollLayer(sys_TEXTURES[4], 0.1, 128 + yofs, -9, 0));
+	
+	//main background hills
+	g_BACKGROUND.addScrollLayer(new BackgroundScrollLayer(sys_TEXTURES[3], 0.25, 48 + yofs, -7, 0));
+	
+	//trees
+	temp = new BackgroundComponentLayer(8, 0.5, -6, 0, 1000, 2250);
+	temp.addTemplate(new Sprite(sys_TEXTURES[9], 1, 1), 200 + yofs, 220 + yofs, 1);
+	temp.addTemplate(new Sprite(sys_TEXTURES[10], 1, 1), 160 + yofs, 180 + yofs, 1);
+	temp.addTemplate(new Sprite(sys_TEXTURES[11], 1, 1), 160 + yofs, 200 + yofs, 1);
+	g_BACKGROUND.addComponentLayer(temp);
+	
+	//nearer trees
+	temp = new BackgroundComponentLayer(8, 0.65, -5, 0, 300, 1800);
+	temp.addTemplate(new Sprite(sys_TEXTURES[6], 1, 1), 128 + yofs, 160 + yofs, 1);
+	temp.addTemplate(new Sprite(sys_TEXTURES[7], 1, 1), 128 + yofs, 140 + yofs, 1);
+	temp.addTemplate(new Sprite(sys_TEXTURES[8], 1, 1), 128 + yofs, 180 + yofs, 1);
+	temp.nextSpawnTime = g_GAMETIME + 2000;
+	g_BACKGROUND.addComponentLayer(temp);
+	
+	//houses
+	temp = new BackgroundComponentLayer(4, 0.8, -3, 0, 2000, 4000);
+	temp.addTemplate(new Sprite(sys_TEXTURES[12], 1, 1), 160 + yofs, 190 + yofs, 1);
+	temp.addTemplate(new Sprite(sys_TEXTURES[13], 1, 1), 160 + yofs, 190 + yofs, 1);
+	temp.nextSpawnTime = g_GAMETIME + 6000;
+	g_BACKGROUND.addComponentLayer(temp);
+}

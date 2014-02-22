@@ -1,0 +1,66 @@
+body {
+	padding: 0;
+	margin: 0;
+	border: 0;
+	background-color: #AA3333;
+}
+
+canvas {
+	top: 0px;
+	left: 0px;
+	background-color: #000000;
+	border: 0;
+	margin: 0;
+	padding: 0;
+}
+
+div.game {
+	display: inline-block;
+	position: absolute;
+	margin: 16;
+	border: 2px solid yellow;
+	padding: 0;
+}
+div.ui {
+	position: absolute;
+	top: 0px;
+	z-index: 2;
+	visibility: visible;
+	text-shadow: 2px 2px 0px rgb(0, 0, 0);
+	font-family: 'Mountains of Christmas', cursive;
+	font-size: 32px;
+	color: #FFFF33;
+}
+div.debug {
+	font-family: monospace;
+	font-size: 12px;
+	text-align: left;
+	color: #00FF00;
+	z-index: 5;
+	visibility: hidden;
+}
+
+p.debug_left {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	background: rgba(0, 32, 0, 0.75);
+	border: 1px solid #00FF00;
+	padding: 8px;
+}
+p.debug_right {
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	background: rgba(0, 32, 0, 0.75);
+	border: 1px solid #00FF00;
+	padding: 8px;
+}
+p {
+	padding:0px;
+	margin:0px;
+}
+p.ui {
+	position: absolute;
+	top: 8px;
+}

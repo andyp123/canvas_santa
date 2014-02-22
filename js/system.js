@@ -364,20 +364,28 @@ function Mouse() {
 	this.dy = 0;
 	this.left = new ButtonState();
 	this.right = new ButtonState();
+	this.outsideScreen = true;
+	this.ignoreOutsideClicks = true;
 }
 
 //releases the buttons (doesn't touch x or y)
 Mouse.prototype.releaseAll = function() {
 	this.left.release();
 	this.right.release();
+	this.left.lastHoldDuration = 0;
+	this.right.lastHoldDuration = 0;
 }
 
 Mouse.prototype.toString = function() {
 	var rv = new String("<b>Mouse State</b><br> ");
 	rv += this.x + ", " + this.y + " (";
 	rv += this.dx + ", " + this.dy + ")";
+	if (this.outsideScreen) rv += " [OUT]";
+	else rv += "[IN]";
 	if (this.left.state) rv += ", LMB = " + this.left.duration();
 	if (this.right.state) rv += ", RMB = " + this.right.duration();
+	if (this.touchID !== undefined) rv += ", touchID = " + this.touchID;
+	else rv += ", [TOUCH DISABLED]";
 	return rv;
 }
 
@@ -578,8 +586,10 @@ document.onkeyup = function(e) {
 }
 
 document.onmousedown = function(e) {
-	if (e.button == 0) g_MOUSE.left.press();
-	else if (e.button == 2) g_MOUSE.right.press();
+	if (!(g_MOUSE.ignoreOutsideClicks && g_MOUSE.outsideScreen)) {
+		if (e.button == 0) g_MOUSE.left.press();
+		else if (e.button == 2) g_MOUSE.right.press();
+	}
 }
 
 document.onmouseup = function(e) {
@@ -601,6 +611,12 @@ document.onmousemove = function(e) {
 	
 	g_MOUSE.x -= g_SCREEN.posX;
 	g_MOUSE.y -= g_SCREEN.posY;
+	
+	if (g_MOUSE.x < 0 || g_MOUSE.x > g_SCREEN.width || g_MOUSE.y < 0 || g_MOUSE.y > g_SCREEN.height) {
+		g_MOUSE.outsideScreen = true;
+	} else {
+		g_MOUSE.outsideScreen = false;
+	}
 }
 
 window.onblur = function() {
