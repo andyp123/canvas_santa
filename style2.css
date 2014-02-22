@@ -17,8 +17,8 @@ canvas {
 div.game {
 	display: inline-block;
 	position: absolute;
-	margin: 16;
-	border: 2px solid yellow;
+	margin: 0;
+	border: 0;
 	padding: 0;
 }
 div.ui {
