@@ -2279,8 +2279,8 @@ function main() {
 }
 
 function init() {
-	var screen_width = 1280; //original width 960
-	var screen_height = 400; //original height 320
+	var screen_width = 960; //original width 960
+	var screen_height = 480; //original height 320
 
 	if(g_SCREEN.init('screen', screen_width, screen_height, true)) {		
 		//random numbers
