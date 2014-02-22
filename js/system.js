@@ -148,37 +148,96 @@ function sys_main() {
 /* SCREEN **********************************************************************
 A simple container for basic screen related functions
 */
-function Screen() {
+function Screen(useTouch) {
 	this.canvas = null;
 	this.context = null;
 	this.width = 0;
 	this.height = 0;
-	this.posX = 0;
+	this.posX = 0; //used, but this is a hack!
 	this.posY = 0;
-	this.clearColor = "128, 128, 128";
-	this.clearAlpha = 1.0;
+	this.clearColor = "rgb(64,64,64)";
+	this.clearAlpha = 1.0; //unused
+	this.useTouch = useTouch || false;
 }
 
 Screen.prototype.init = function(id, width, height) {
 	this.canvas = document.getElementById(id);
 	if (this.canvas != null) {
-		this.canvas.onresize = function() {
-			g_SCREEN.width = g_SCREEN.canvas.width;
-			g_SCREEN.height = g_SCREEN.canvas.height;
-		}
 		this.context = this.canvas.getContext('2d');
 		this.setSize(width, height);
 		this.posX = this.canvas.offsetLeft;
 		this.posY = this.canvas.offsetTop;
+		
+		if (this.useTouch) this.addTouchEventListeners();
+
 		return true;
 	}
 	alert("canvas with id \'" + id + "\' could not be found");
 	return false;
 }
 
+//hacked in single touch support to emulate mouse
+Screen.prototype.addTouchEventListeners = function() {
+	var mouse = g_MOUSE;
+	mouse.touchID = -1;
+
+	this.canvas.addEventListener('touchstart', function(event) {
+		event.preventDefault();
+
+		var mouse = g_MOUSE;
+		var touches = event.targetTouches;
+		if (touches.length > 0 && mouse.touchID == -1) {
+			mouse.x = touches[0].pageX - g_SCREEN.posX;
+			mouse.y = touches[0].pageY - g_SCREEN.posY;
+			mouse.left.press();
+			mouse.touchID = touches[0].identifier;
+		}
+	}, false);
+
+	this.canvas.addEventListener('touchend', function(event) {
+		event.preventDefault();
+
+		var mouse = g_MOUSE;
+		var touches = event.changedTouches;
+		for (var i = 0; i < touches.length; ++i) {
+			if (touches[i].identifier == mouse.touchID) {
+				mouse.left.release();
+				mouse.touchID = -1;
+				return;
+			}
+		}
+	}, false);
+
+	this.canvas.addEventListener('touchmove', function(event) {
+		event.preventDefault();
+
+		var mouse = g_MOUSE;
+		var touches = event.changedTouches;
+		for (var i = 0; i < touches.length; ++i) {
+			if (touches[i].identifier == mouse.touchID) {
+				mouse.x = touches[i].pageX - g_SCREEN.posX;
+				mouse.y = touches[i].pageY - g_SCREEN.posY;
+				return;
+			}
+		}
+	}, false);
+
+	// disable accidental right click menu activation (hopefully)
+	this.canvas.addEventListener('onContextMenu', function(event) {
+		event.preventDefault();
+	}, false);
+
+	this.canvas.addEventListener('onblur', function(event) {
+		var mouse = g_MOUSE;
+		mouse.touchID = -1;
+	});	
+}
+
 Screen.prototype.clear = function() {
 	if (this.context != null) {
-		this.context.clearRect(0, 0, this.width, this.height);
+		//this.context.clearRect(0, 0, this.width, this.height);
+		this.context.fillStyle = this.clearColor;
+		this.context.fillRect(0, 0, this.width, this.height);
 	}
 }
 

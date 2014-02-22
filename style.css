@@ -11,7 +11,7 @@ canvas {
 	width: 928px;
 	height: 320px;
 	background-color: #000000;
-	border: 0;
+	border: solid 2px yellow;
 	margin: 0;
 	padding: 0;
 }
@@ -24,7 +24,7 @@ div.gradient {
 	background-image: -o-linear-gradient(top, #AA3333, #000000);
 	background-image: -webkit-linear-gradient(top, #AA3333, #000000);
 	background-image: -moz-linear-gradient(top, #AA3333, #000000);
-	background-image: -ms-linear-gradient(top, #AA3333, #0000003);
+	background-image: -ms-linear-gradient(top, #AA3333, #000003);
 	background-image: linear-gradient(top, #AA3333, #000000);
 	
 }
@@ -32,7 +32,8 @@ div.main {
 	width: 992px;
 	height: 384px;
 	margin: auto;
-	background-image: url(img/window_border.png);
+	border: solid 2px yellow;
+	/*background-image: url(img/window_border.png);*/
 }
 div.fill {
 	width: 544px;
@@ -42,7 +43,7 @@ div.fill {
 	margin-left: auto;
 	margin-right: auto;
 	background-color: #AA3333;
-	background-image: url(img/window_fill.png);
+	/*background-image: url(img/window_fill.png);*/
 	text-align: center;
 	text-shadow: 2px 2px 0px rgb(0, 0, 0);
 	font-family: 'Mountains of Christmas', cursive;
