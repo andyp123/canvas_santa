@@ -71,8 +71,7 @@ create object caches (do not require many objects aside from particles)
 
 /* GLOBAL VARIABLES ************************************************************
 */
-var g_SCREEN_WIDTH = 928; //original width 960
-var g_SCREEN_HEIGHT = 320; //original height 320
+
 var g_GAMEAREA = null; //aabb that can be used to check if objects go off screen
 var g_DEBUG = false;
 var g_RAND = null; //random number table
@@ -1764,7 +1763,7 @@ GameDirector.prototype.addObstacleType = function(instanceFunc, chance, minSpawn
 
 GameDirector.prototype.spawnObstacle = function(type, instance) {
 	//spawn the object (g_SCREEN.width + this.nextSpawnAt - g_GAMESTATE.scrollDistance SHOULD be correct...)
-	type.instanceFunc.call(this, instance, (g_SCREEN.width + this.nextSpawnAt - g_GAMESTATE.scrollDistance + this.preSpawnGap), g_SCREEN_HEIGHT);
+	type.instanceFunc.call(this, instance, (g_SCREEN.width + this.nextSpawnAt - g_GAMESTATE.scrollDistance + this.preSpawnGap), g_SCREEN.height);
 	this.lastSpawnAt = this.nextSpawnAt - g_GAMESTATE.scrollDistance + g_SCREEN.width;
 	//set up spawning restrictions
 	if (type.minSpawnGapType) {
@@ -2058,11 +2057,11 @@ GameState.prototype.missDelivery = function() {
 GameState.prototype.incrementStars = function() {
 	if (this.state == GameState.STATE_GAMEPLAY) {
 		this.stars++;
-		this.timeLeft += 3000; //3 second bonus time!
-		if (this.stars > 4) {
+		this.timeLeft += 5000; //add bonus time!
+		/*if (this.stars > 4) {
 			this.multiplier++;
 			this.stars = 0;
-		}
+		}*/
 	}
 }
 
@@ -2135,8 +2134,8 @@ Player.prototype.update = function() {
 			this.pos.y = -320;
 			this.vel.set(0, 100);
 			this.fallFrames = Math.floor(30 * 1.0 / g_GAMESTATE.intensity);
-		} else if (this.pos.y > g_SCREEN_HEIGHT + 64) {
-			this.pos.y = g_SCREEN_HEIGHT + 64;
+		} else if (this.pos.y > g_SCREEN.height + 64) {
+			this.pos.y = g_SCREEN.height + 64;
 			this.vel.set(0, 0);
 			this.collisionTime = g_GAMETIME;
 			this.crashed = true;
@@ -2324,9 +2323,10 @@ function init_background() {
 }
 
 function init() {
-	if(g_SCREEN.init('screen', g_SCREEN_WIDTH, g_SCREEN_HEIGHT)) {
-		g_SCREEN.clear();
-		
+	var screen_width = 928; //original width 960
+	var screen_height = 320; //original height 320
+
+	if(g_SCREEN.init('screen', screen_width, screen_height, true)) {		
 		//random numbers
 		//http://davidbau.com/archives/2010/01/30/random_seeds_coded_hints_and_quintillions.html
 		Math.seedrandom('Merry Christmas!');
@@ -2373,6 +2373,8 @@ function init() {
 		g_CAMERA.max.y = 0;
 		g_CAMERA.constrain = true;
 		g_CAMERA.trackTarget = g_PLAYER;
+
+		g_GAMESTATE.setState(GameState.STATE_ATTRACT);
 	}
 }
 

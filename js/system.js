@@ -148,7 +148,7 @@ function sys_main() {
 /* SCREEN **********************************************************************
 A simple container for basic screen related functions
 */
-function Screen(useTouch) {
+function Screen() {
 	this.canvas = null;
 	this.context = null;
 	this.width = 0;
@@ -157,10 +157,10 @@ function Screen(useTouch) {
 	this.posY = 0;
 	this.clearColor = "rgb(64,64,64)";
 	this.clearAlpha = 1.0; //unused
-	this.useTouch = useTouch || false;
+	this.useTouch = false;
 }
 
-Screen.prototype.init = function(id, width, height) {
+Screen.prototype.init = function(id, width, height, useTouch) {
 	this.canvas = document.getElementById(id);
 	if (this.canvas != null) {
 		this.context = this.canvas.getContext('2d');
@@ -168,6 +168,7 @@ Screen.prototype.init = function(id, width, height) {
 		this.posX = this.canvas.offsetLeft;
 		this.posY = this.canvas.offsetTop;
 		
+		this.useTouch = useTouch || false;
 		if (this.useTouch) this.addTouchEventListeners();
 
 		return true;
