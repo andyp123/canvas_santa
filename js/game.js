@@ -1885,7 +1885,7 @@ GameState.prototype.update = function() {
 			this.timeLeft -= g_FRAMETIME_MS;
 			if (this.timeLeft <= 0) {
 				this.timeLeft = 0;
-				this.setState(GameState.STATE_TIMEOVER);
+				//this.setState(GameState.STATE_TIMEOVER);
 			}
 			document.getElementById('ui_time').innerHTML = "<b>Time</b>: " + Math.ceil(this.timeLeft / 1000);
 			if (this.stateTime > 1000 && this.stateTime <= 1000 + g_FRAMETIME_MS) { //so hacky and shit
