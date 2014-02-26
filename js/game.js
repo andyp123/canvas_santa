@@ -1871,7 +1871,7 @@ GameState.prototype.update = function() {
 	
 	switch (this.state) {
 		case GameState.STATE_ATTRACT: //no obstacle spawning, player moved by ai. switch state on keypress
-			if (g_KEYSTATES.justPressed(32) || g_MOUSE.left.justPressed()) {
+			if (g_KEYSTATES.justPressed(KEYS.SPACE) || g_MOUSE.left.justPressed()) {
 				this.setState(GameState.STATE_GAMESTART);
 			}
 			break;
@@ -2108,7 +2108,7 @@ Player.prototype.update = function() {
 			this.boostFrames = 10;
 		}
 	} else if (!this.collisionTime && this.fallFrames < 1) {
-		if (g_KEYSTATES.isPressed(32) || g_MOUSE.left.isPressed()) {
+		if (g_KEYSTATES.isPressed(KEYS.SPACE) || g_MOUSE.left.isPressed()) {
 			this.boostFrames = 1;
 		}
 	}
@@ -2221,7 +2221,7 @@ function draw() {
 }
 
 function main() {
-	if (g_KEYSTATES.justPressed(68)) { //d for debug!
+	if (g_KEYSTATES.justPressed(KEYS.D)) {
 		g_DEBUG = !g_DEBUG;
 		if (g_DEBUG) {
 			document.getElementById('debug_panel').style.visibility = "visible";
@@ -2230,13 +2230,13 @@ function main() {
 		}
 	}	
 	if (g_DEBUG) {
-		if (g_KEYSTATES.justPressed(84)) { //t for track
+		if (g_KEYSTATES.justPressed(KEYS.T)) {
 			g_CAMERA.trackTarget = (g_CAMERA.trackTarget) ? null : g_PLAYER;
 		}
-		if (g_KEYSTATES.justPressed(67)) { //c for constrain
+		if (g_KEYSTATES.justPressed(KEYS.C)) {
 			g_CAMERA.constrain = !g_CAMERA.constrain;
 		}
-		if (g_KEYSTATES.justPressed(65)) { //a for attract
+		if (g_KEYSTATES.justPressed(KEYS.A)) {
 			g_PLAYER.collisionTime = 0;
 			if (g_GAMESTATE.state == GameState.STATE_ATTRACT) {
 				g_GAMESTATE.setState(GameState.STATE_GAMEPLAY);
@@ -2246,16 +2246,19 @@ function main() {
 		}
 	}
 	
-	if (g_KEYSTATES.justPressed(83)) { //s for spawn
+	if (g_KEYSTATES.justPressed(KEYS.S)) {
 		g_PARTICLE_MANAGER.spawnEffect(ParticleSystem.init_getPresent, g_SPRITE_CACHE.fx_getPresent, g_MOUSE.x + g_CAMERA.pos.x, g_MOUSE.y + g_CAMERA.pos.y, 0, 9999);		
 	}
-	if (g_KEYSTATES.justPressed(37)) {
+	if (g_KEYSTATES.justPressed(KEYS.LEFT)) {
 		g_GAMESTATE.intensity -= 0.1;
 	}
-	if (g_KEYSTATES.justPressed(39)) {
+	if (g_KEYSTATES.justPressed(KEYS.RIGHT)) {
 		g_GAMESTATE.intensity += 0.1;
 	}
-	
+	if (g_KEYSTATES.justPressed(KEYS.F)) {
+		// doesn't work. Seems that the function must be called from an event, such as a button click... :(
+		goFullscreen();
+	}
 	
     update();
     draw();
@@ -2375,4 +2378,28 @@ function init_background() {
 	temp.addTemplate(new Sprite(sys_TEXTURES[13], 1, 1), 160 + yofs, 190 + yofs, 1);
 	temp.nextSpawnTime = g_GAMETIME + 6000;
 	g_BACKGROUND.addComponentLayer(temp);
+}
+
+function goFullscreen() {
+	var canvas = g_SCREEN.canvas;
+	var scale = false;
+	if (canvas["requestFullscreen"]) {
+		console.log("fullscreen support: " + document.fullscreenEnabled);
+		canvas.requestFullscreen();
+		scale = true;
+	}
+	if (canvas["webkitRequestFullscreen"]) {
+		console.log("fullscreen support: " + document.webkitFullscreenEnabled);
+		canvas.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+		scale = true;
+	}
+	if (canvas["mozRequestFullScreen"]) {
+		console.log("fullscreen support: " + document.mozFullscreenEnabled);
+		canvas.mozRequestFullScreen();
+		scale = true;
+	}
+
+	if (scale) {
+		
+	}
 }

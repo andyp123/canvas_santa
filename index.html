@@ -14,7 +14,7 @@
 
 	<body onload='sys_startup(init, main, 60)'>
 
-		<div class='game'>
+		<div class='game' id='game_div'>
 			<canvas id='screen'></canvas>
 			<div class='ui' id='ui_panel'>
 				<p id='ui_score' class='ui' style='left: 16px; width: 256px'>Score:</p>
@@ -25,6 +25,8 @@
 				<p id='keystates' class='debug_left'>[key states]</p>
 				<p id='debug' class='debug_right'>[debug output]</p>
 			</div>
+
+			<button onclick="goFullscreen()">ENTER FULLSCREEN</button>
 		</div>
 
 	</body>
